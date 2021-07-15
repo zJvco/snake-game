@@ -7,12 +7,6 @@ from apple import Apple
 
 pygame.init()
 
-
-def collision(obj_1, obj_2):
-    if obj_1.colliderect(obj_2):
-        return True
-
-
 WINDOW_SIZE = (600, 600)
 WINDOW = pygame.display.set_mode(WINDOW_SIZE)
 clock = pygame.time.Clock()
@@ -28,6 +22,18 @@ apple = Apple(background_block_size)
 
 eat_sound = mixer.Sound(os.path.join("assets/sounds", "eat_apple_sound.wav"))
 game_over_sound = mixer.Sound(os.path.join("assets/sounds", "game_over_sound.wav"))
+
+
+def check_collision(obj_1, obj_2):
+    if obj_1.colliderect(obj_2):
+        return True
+
+
+def generate_background(window_size, bg_size):
+    for y in range(int(window_size[1] / bg_size)):
+        for x in range(int(window_size[0] / bg_size)):
+            pygame.draw.rect(WINDOW, (150, 150, 150), (x * bg_size, y * bg_size, bg_size, bg_size), 1)
+
 
 while True:
     WINDOW.fill((0, 0, 0))
@@ -53,9 +59,8 @@ while True:
                 snake.vel_x = 0
 
     for i in range(len(snake.rect)):
-        if i > 0:
-            if collision(snake.rect[0], snake.rect[i]):
-                game_over = True
+        if i > 0 and check_collision(snake.rect[0], snake.rect[i]):
+            game_over = True
 
     if game_over:
         game_over_sound.play()
@@ -66,7 +71,7 @@ while True:
         score = 0
         game_over = False
 
-    if collision(snake.rect[0], apple.rect):
+    if check_collision(snake.rect[0], apple.rect):
         eat_sound.play()
         apple.rect.x, apple.rect.y = apple.random_apple()[0], apple.random_apple()[1]
         snake.rect.append(pygame.Rect(snake.rect[0].x, snake.rect[0].y, snake.size, snake.size))
@@ -78,9 +83,7 @@ while True:
     apple.update(WINDOW)
     snake.update(WINDOW, WINDOW_SIZE)
 
-    for y in range(int(WINDOW_SIZE[1] / background_block_size)):
-        for x in range(int(WINDOW_SIZE[0] / background_block_size)):
-            pygame.draw.rect(WINDOW, (150, 150, 150), (x * background_block_size, y * background_block_size, background_block_size, background_block_size), 1)
+    generate_background(WINDOW_SIZE, background_block_size)
 
     pygame.display.flip()
     clock.tick(FPS)
